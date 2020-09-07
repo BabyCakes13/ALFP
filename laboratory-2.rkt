@@ -163,3 +163,17 @@
           
 ;(trace removeAll)
 ;(removeAll '(1 s (a s b) s c) 's)
+
+; c) The function (get subst s) which returns the value paired with symbols in the substitution subst, if it exists,
+; and s is s is not paired with any value in subst. For example:
+; (get '((a 4) (b 6)) ’b): 6
+; (get '((a 4) (b 6)) ’c): 'c
+(define (get subst s)
+  (if (null? subst)
+      s
+      (if (eq? (caar subst) s)
+          (cadar subst)
+          (get (cdr subst) s))))
+
+(get '((a 4) (b 6)) 'b)
+(get '((a 4) (b 6)) 'c)
