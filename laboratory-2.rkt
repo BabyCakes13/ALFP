@@ -175,5 +175,38 @@
           (cadar subst)
           (get (cdr subst) s))))
 
-(get '((a 4) (b 6)) 'b)
-(get '((a 4) (b 6)) 'c)
+;(get '((a 4) (b 6)) 'b) ; this will return 6, since the substitution is found.
+;(get '((a 4) (b 6)) 'c) ; this will return the original symbol, since no substitution could be found.
+
+; (d) The function (substitute nlst subst) which computes the nestedlist in which every symbols
+; from nlst is replaced with (get subst s). For example:
+; (substitute ’(s (a ((b)) s (c)) ’((s 1) (b 3))): ’(1 (a ((3)) 1 (c))
+(define (substitute nlst subst)
+  (if (null? nlst)
+      '()
+      (if (not (list? nlst))
+          (if (symbol? nlst)
+              (get subst nlst)
+              nlst)
+          (cons (substitute (car nlst) subst) (substitute (cdr nlst) subst)))))
+
+;(trace get)
+;(trace substitute)
+;(substitute '(s a b)
+            ;'((s 1) (b 3)))
+;(substitute '(s (a ((b)) s (c)))
+            ;'((s 1) (b 3)))
+
+(define (countsym nlst)
+  (if (null? nlst)
+      0
+      (if (not (list? nlst))
+          (if (symbol? nlst)
+              1
+              0)
+          (+ (countsym (car nlst)) (countsym (cdr nlst))))))
+
+(trace countsym)
+(countsym '((s (1 a) b (c d) s)))               
+                   
+      
