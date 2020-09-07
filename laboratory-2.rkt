@@ -150,7 +150,7 @@
 ;(subst? '((a 3 4) (b 4)))
 ;(subst? '(a (a a) (b 4)))
 
-; The  function (removeAll nlst s) which removes all occurrences of symbols from the nested list nlst.
+; (b) The  function (removeAll nlst s) which removes all occurrences of symbols from the nested list nlst.
 ; For example, (removeAll ’(1 s (a s b) s c) ’s) should return ’(1 (a b) c).
 (define (removeAll nlst s)
   (if (null? nlst)
@@ -164,7 +164,7 @@
 ;(trace removeAll)
 ;(removeAll '(1 s (a s b) s c) 's)
 
-; c) The function (get subst s) which returns the value paired with symbols in the substitution subst, if it exists,
+; (c) The function (get subst s) which returns the value paired with symbols in the substitution subst, if it exists,
 ; and s is s is not paired with any value in subst. For example:
 ; (get '((a 4) (b 6)) ’b): 6
 ; (get '((a 4) (b 6)) ’c): 'c
@@ -197,6 +197,8 @@
 ;(substitute '(s (a ((b)) s (c)))
             ;'((s 1) (b 3)))
 
+; The function (countsym nlst) which counts the number of symbol occurrences in the nested list nlst.
+; For example: (countsym ’((s (1 a) b (c d) s))): 6.
 (define (countsym nlst)
   (if (null? nlst)
       0
@@ -206,7 +208,36 @@
               0)
           (+ (countsym (car nlst)) (countsym (cdr nlst))))))
 
-(trace countsym)
-(countsym '((s (1 a) b (c d) s)))               
+;(trace countsym)
+;(countsym '((s (1 a) b (c d) s)))               
                    
-      
+; Consider the set of lists of symbols defined inductively by
+; 〈slist〉::= null | (cons〈symbol〉 〈slist〉)
+; Define recursively the following functions:
+
+; (a)(slist? sl) returns #t if slis a list of symbols, and #f otherwise.
+(define (slist? sl)
+  (if (null? sl)
+      #t
+      (if (list? sl)
+          (and
+            (slist? (car sl))
+            (slist? (cdr sl)))
+          (if (symbol? sl)
+              #t
+              #f))))
+;(trace slist?)
+;(slist? '(a b (a b)))
+
+; (b)(remove-all sl s) removes all occurrences of symbol s from the list sl.
+
+(define (remove-all sl s)
+  (if (null? sl)
+      '()
+      (if (not (list? sl))
+          sl ; since in the next if we jump over any s, we will never get to the point when we have a single element which is s.
+          (if (eq? (car sl) s)
+              (remove-all (cdr sl) s)
+              (cons (remove-all (car sl) s) (remove-all (cdr sl) s))))))
+(remove-all '(a b (a b)) 'a) ; this will return '(b (b)).
+(remove-all '(a b (a b)) 'c) ; since no c is found, the original list will be returned.
