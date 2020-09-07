@@ -235,9 +235,78 @@
   (if (null? sl)
       '()
       (if (not (list? sl))
-          sl ; since in the next if we jump over any s, we will never get to the point when we have a single element which is s.
+; since in the next if we jump over any s, we will never get to the point when we have a single element which is s.
+          sl
           (if (eq? (car sl) s)
               (remove-all (cdr sl) s)
               (cons (remove-all (car sl) s) (remove-all (cdr sl) s))))))
-(remove-all '(a b (a b)) 'a) ; this will return '(b (b)).
-(remove-all '(a b (a b)) 'c) ; since no c is found, the original list will be returned.
+;(remove-all '(a b (a b)) 'a) ; this will return '(b (b)).
+;(remove-all '(a b (a b)) 'c) ; since no c is found, the original list will be returned.
+
+; (c)(remove-first sl s) removes the first occurrence of symbol s from the list of symbols sl.
+(define (remove-first sl s)
+  (define (remove-first-acc sl s acc)
+    (if (null? sl)
+        '()
+        (if (not (list? sl))
+            sl
+            (begin
+              (printf "car:~a cdr:~a acc:~a ~n." (car sl) (cdr sl) acc)
+              (if (and (eq? (car sl) s) (not acc))
+                  (cdr sl)
+                  (cons (remove-first-acc (car sl) s #f) (remove-first-acc (cdr sl) s #f)))))))
+  (trace remove-first-acc)
+    (remove-first-acc sl s #t))
+
+;(trace remove-first)
+;(remove-first '(a b (a b)) 'b)
+
+; 10. Define the function (notate nlst) which replaces every occurrence of asymbol s in a nested list nlst with the
+; list (list s  d), where d is the nesting depth of the occurrence of s in nlst. For example:
+; (notate ’(a b (() (a)))): ((a 1) (b 1) (() ((a 3))))
+(define (notate nlst)
+  (define (notate-acc nlst depth)
+    (if (null? nlst)
+        '()
+        (if (not (list? nlst))
+            (if (symbol? nlst)
+                (list nlst depth)
+                nlst)
+            (cons (notate-acc (car nlst) (+ 1 depth)) (notate-acc (cdr nlst) depth)))))
+  (trace notate-acc)
+  (notate-acc nlst 0))
+
+;(trace notate)
+;(notate '(a b (() (a))))
+;(notate '(1 b (b (b))))
+
+; 11. Consider the set of binary trees defined inductively by
+; 〈btree〉::=〈number〉| (list〈symbol〉 〈btree〉 〈btree〉)
+; The size of a binary tree bt ∈〈btree〉is the number of numbers and symbols that occur in bt.
+; The depth of a binary tree is the number of nodes along the longest path from the root to a leaf node.
+
+; a)  Define recursively the following functions:
+; i. (btsizebt) which computes the size of the binary tree bt.
+
+(define (btsize bt)
+  (if (null? bt)
+      0
+      (if (not (list? bt))
+          (if (or (number? bt) (symbol? bt))
+              1
+              0)
+          (+ (btsize (car bt)) (btsize (cdr bt))))))
+
+; ii.(btdepth bt) which computes the depth of the binary tree bt.
+(define (btdepth bt)
+  (cond [(null? bt) 0] ; if the list is null, its depths is 0.
+        [(list? bt)
+         (+ 1 (btdepth (cdr bt)))]  ; if we find a new list, we count the depth.
+        [(not (list? bt)) 0])) ; if the element is not a list, we do not add additional depth.
+
+;(trace btsize)
+;(trace btdepth)
+(define bt '(a (b 1 2)
+               (c 3 4)))
+;(btsize bt) ; this will yeld 7, vecause we have a, b, c, 1, 2, 3, 4.
+(btdepth bt) ; this will yeld 3, since we have the depth (counting from 1) 3.
